@@ -37,8 +37,14 @@
       },
       body: JSON.stringify(payload),
       keepalive: true
+    }).then(function(response) {
+      // Log for debugging (remove in production if needed)
+      if (response.status !== 204 && response.status !== 200) {
+        console.warn('Holm Analytics: Tracking failed with status', response.status);
+      }
     }).catch(function(err) {
-      // Silently fail - don't interrupt user experience
+      // Log error for debugging
+      console.warn('Holm Analytics: Failed to send tracking data', err);
     });
   }
   
