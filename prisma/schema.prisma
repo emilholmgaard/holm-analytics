@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String   // Hashed password
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  sites     Site[]
+  
+  @@index([email])
+}
+
+model Site {
+  id            String   @id @default(cuid())
+  domain        String
+  timezone      String   @default("UTC")
+  scriptId      String   @unique // Unique ID for the script (e.g., "pa-ABC123")
+  verified      Boolean  @default(false)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  pageViews     PageView[]
+  
+  @@index([userId])
+  @@index([scriptId])
+  @@index([domain])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  domain    String
+  url       String
+  referrer  String   @default("")
+  screenWidth   Int
+  screenHeight  Int
+  viewportWidth  Int
+  viewportHeight Int
+  timestamp DateTime @default(now())
+  
+  siteId    String?
+  site      Site?    @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  
+  @@index([domain])
+  @@index([timestamp])
+  @@index([siteId])
+}
