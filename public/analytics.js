@@ -38,13 +38,18 @@
       body: JSON.stringify(payload),
       keepalive: true
     }).then(function(response) {
-      // Log for debugging (remove in production if needed)
-      if (response.status !== 204 && response.status !== 200) {
-        console.warn('Holm Analytics: Tracking failed with status', response.status);
+      // Log for debugging
+      if (response.status === 204 || response.status === 200) {
+        console.log('✅ Holm Analytics: Page view tracked successfully');
+      } else {
+        console.warn('⚠️ Holm Analytics: Tracking failed with status', response.status);
+        return response.text().then(function(text) {
+          console.warn('Response:', text);
+        });
       }
     }).catch(function(err) {
       // Log error for debugging
-      console.warn('Holm Analytics: Failed to send tracking data', err);
+      console.error('❌ Holm Analytics: Failed to send tracking data', err);
     });
   }
   

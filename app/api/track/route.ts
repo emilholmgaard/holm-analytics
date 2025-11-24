@@ -50,6 +50,14 @@ export async function POST(request: NextRequest) {
       siteId: site.id,
     });
     
+    // Log successful tracking for debugging
+    console.log('✅ Page view tracked:', {
+      scriptId: body.scriptId,
+      domain: body.domain || site.domain,
+      url: body.url,
+      siteId: site.id,
+    });
+    
     // Return 204 No Content (like Plausible)
     return new NextResponse(null, { 
       status: 204,
@@ -61,8 +69,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Tracking error:', error);
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error details:', error.message, error.stack);
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { 
         status: 500,
         headers: {

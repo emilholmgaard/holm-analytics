@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma';
 
 async function checkPageViews() {
   try {
-    const scriptId = 'pa-ZI4OS0Mkv01ndrLr';
+    const scriptId = 'pa-5c_L8Ep2vL4xab-6';
     
     const site = await prisma.site.findUnique({
       where: { scriptId },
