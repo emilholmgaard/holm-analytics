@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Test</title>
+    <script defer src="https://www.holmkonsultering.dk/api/script/pa-5c_L8Ep2vL4xab-6"></script>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <p>Check console for tracking logs</p>
+    <script>
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking if script executed...');
+            setTimeout(function() {
+                console.log('If you see "✅ Holm Analytics: Tracked" above, it worked!');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+

@@ -7,11 +7,16 @@
   var domain = '{{DOMAIN}}';
   var lastPage = null;
   
+  // Log that script loaded
+  console.log('🔍 Holm Analytics: Script loaded', scriptId);
+  
   if (!scriptId || scriptId === '{{SCRIPT_ID}}') {
+    console.error('❌ Holm Analytics: scriptId not set');
     return;
   }
   
   if (!apiEndpoint || apiEndpoint === '{{API_ENDPOINT}}') {
+    console.error('❌ Holm Analytics: apiEndpoint not set');
     return;
   }
   
