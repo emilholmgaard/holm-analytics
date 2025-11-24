@@ -30,7 +30,9 @@ export async function GET(
     return new NextResponse(script, {
       headers: {
         'Content-Type': 'application/javascript',
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour instead of 1 year
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET',
       },
     });
   } catch (error) {
