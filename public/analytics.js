@@ -6,8 +6,16 @@
   var apiEndpoint = '{{API_ENDPOINT}}';
   var domain = '{{DOMAIN}}';
   
+  // Debug logging
+  console.log('🔍 Holm Analytics: Script loaded', { scriptId: scriptId, apiEndpoint: apiEndpoint, domain: domain });
+  
   if (!scriptId || scriptId === '{{SCRIPT_ID}}') {
-    console.warn('Holm Analytics: Invalid script configuration');
+    console.error('❌ Holm Analytics: Invalid script configuration - scriptId is missing or not replaced');
+    return;
+  }
+  
+  if (!apiEndpoint || apiEndpoint === '{{API_ENDPOINT}}') {
+    console.error('❌ Holm Analytics: Invalid script configuration - apiEndpoint is missing or not replaced');
     return;
   }
   
@@ -53,12 +61,22 @@
     });
   }
   
-  // Track on page load
-  if (document.readyState === 'complete') {
-    track();
-  } else {
-    window.addEventListener('load', track);
+  // Track on page load - try multiple methods to ensure it runs
+  function initTracking() {
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(track, 100); // Small delay to ensure DOM is ready
+    } else {
+      window.addEventListener('load', function() {
+        setTimeout(track, 100);
+      });
+      // Also try DOMContentLoaded as fallback
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(track, 100);
+      });
+    }
   }
+  
+  initTracking();
   
   // Track on pushState/replaceState (SPA navigation)
   var originalPushState = history.pushState;

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Holm Analytics Script</title>
+    <!-- Privacy-friendly analytics by Holm Analytics -->
+    <script async src="https://www.holmkonsultering.dk/api/script/pa-5c_L8Ep2vL4xab-6"></script>
+    <script>
+      window.holmAnalytics=window.holmAnalytics||function(){(holmAnalytics.q=holmAnalytics.q||[]).push(arguments)},holmAnalytics.init=holmAnalytics.init||function(i){holmAnalytics.o=i||{}};
+      holmAnalytics.init()
+    </script>
+</head>
+<body>
+    <h1>Test Holm Analytics Script</h1>
+    <p>Åbn browser console (F12) for at se om scriptet virker.</p>
+    <p>Du skulle se: "✅ Holm Analytics: Page view tracked successfully"</p>
+    
+    <script>
+        // Check if script loaded
+        window.addEventListener('load', function() {
+            console.log('Page loaded');
+            setTimeout(function() {
+                console.log('Checking if tracking was sent...');
+                // The analytics script should have logged something
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
+
