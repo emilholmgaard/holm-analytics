@@ -9,10 +9,35 @@ En simpel web analytics løsning inspireret af Plausible Analytics. Tilføj et s
 - 🔒 Privacy-friendly (ingen cookies, ingen tracking af brugere)
 - ⚡ Letvægt og hurtig
 - 📱 Tracke page views, referrers, screen size, osv.
+- 👤 User authentication og onboarding flow
+- 🗄️ PostgreSQL database integration med Prisma
+- ✅ Site verification system
 
 ## Getting Started
 
-### 1. Start development server
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Setup database
+
+Opret en `.env` fil med:
+
+```env
+DATABASE_URL="postgres://your-database-url"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+```
+
+### 3. Setup database schema
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 4. Start development server
 
 ```bash
 npm run dev
@@ -20,56 +45,57 @@ npm run dev
 
 Åbn [http://localhost:3000](http://localhost:3000) for at se hjemmesiden.
 
-### 2. Tilføj script til din hjemmeside
+## Onboarding Flow
 
-Tilføj dette script til din hjemmeside (i `<head>` eller før `</body>`):
+1. **Register** - Opret en konto på `/register`
+2. **Add Site** - Tilføj dit website på `/sites/add`
+3. **Install Script** - Kopiér scriptet til din hjemmeside
+4. **Verify** - Verificer installationen
+
+## Script Installation
+
+Efter at have tilføjet et site, får du et unikt script som dette:
 
 ```html
-<script 
-  defer 
-  data-domain="dit-domæne.com" 
-  data-api="http://localhost:3000/api/track" 
-  src="http://localhost:3000/analytics.js">
+<!-- Privacy-friendly analytics by Holm Analytics -->
+<script async src="https://www.holmkonsultering.dk/api/script/pa-ABC123"></script>
+<script>
+  window.holmAnalytics=window.holmAnalytics||function(){(holmAnalytics.q=holmAnalytics.q||[]).push(arguments)},holmAnalytics.init=holmAnalytics.init||function(i){holmAnalytics.o=i||{}};
+  holmAnalytics.init()
 </script>
 ```
-
-**Vigtigt:** 
-- Erstat `dit-domæne.com` med dit faktiske domæne
-- Hvis du deployer til produktion, opdater `data-api` med din produktion URL
-
-### 3. Se dine analytics
-
-Gå til [http://localhost:3000/dashboard](http://localhost:3000/dashboard) for at se dine analytics data.
 
 ## Produktion Deployment
 
-1. Deploy til Vercel, Netlify eller lignende
-2. Opdater `data-api` attributten i scriptet til din produktion URL
-3. Sæt miljøvariablen `NEXT_PUBLIC_BASE_URL` til din produktion URL
+### Vercel Deployment
 
-Eksempel:
-```html
-<script 
-  defer 
-  data-domain="dit-domæne.com" 
-  data-api="https://din-analytics-url.vercel.app/api/track" 
-  src="https://din-analytics-url.vercel.app/analytics.js">
-</script>
-```
+1. Push til GitHub
+2. Import projektet i Vercel
+3. Tilføj environment variables:
+   - `DATABASE_URL` - Din PostgreSQL connection string
+   - `NEXT_PUBLIC_BASE_URL` - Din produktion URL (f.eks. `https://www.holmkonsultering.dk`)
+4. Deploy!
+
+### Environment Variables
+
+- `DATABASE_URL` - PostgreSQL database connection string
+- `NEXT_PUBLIC_BASE_URL` - Base URL for analytics server
 
 ## Struktur
 
+- `app/api/` - API endpoints (auth, tracking, sites)
+- `app/dashboard/` - Analytics dashboard
+- `app/sites/` - Site management pages
+- `lib/` - Utilities (auth, storage, prisma)
+- `prisma/` - Database schema
 - `public/analytics.js` - Embeddable tracking script
-- `app/api/track/route.ts` - API endpoint til at modtage tracking data
-- `app/dashboard/page.tsx` - Dashboard til at se analytics
-- `lib/storage.ts` - Simpel in-memory storage (erstat med database i produktion)
 
 ## Noter
 
-- Data gemmes i hukommelsen (in-memory) og går tabt ved server restart
-- For produktion, bør du erstatte `lib/storage.ts` med en rigtig database (PostgreSQL, MongoDB, osv.)
+- Data gemmes i PostgreSQL database
 - Scriptet tracker automatisk SPA navigation (pushState/replaceState)
 - Ingen cookies eller personlig identifikation
+- Hvert site får sit eget unikke script ID
 
 ## Learn More
 
