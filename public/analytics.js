@@ -17,11 +17,14 @@
   
   // Track pageview (based on Plausible's approach)
   function track() {
-    // Prevent duplicate tracking for same page
-    if (lastPage === window.location.pathname) {
+    // Prevent duplicate tracking for same page (but allow if it's a different visit)
+    var currentPath = window.location.pathname;
+    if (lastPage === currentPath && document.visibilityState === 'visible') {
       return;
     }
-    lastPage = window.location.pathname;
+    lastPage = currentPath;
+    
+    console.log('📊 Holm Analytics: Tracking pageview', currentPath);
     
     var payload = {
       scriptId: scriptId,
@@ -48,9 +51,21 @@
         },
         keepalive: true,
         body: JSON.stringify(payload)
-      }).catch(function() {
-        // Silently fail
+      }).then(function(response) {
+        // Log success for debugging
+        if (response.status === 204 || response.status === 200) {
+          console.log('✅ Holm Analytics: Tracked', payload.url);
+        }
+      }).catch(function(err) {
+        // Log error for debugging
+        console.error('❌ Holm Analytics: Failed to track', err);
       });
+    } else {
+      // Fallback to XMLHttpRequest if fetch is not available
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', apiEndpoint, true);
+      xhr.setRequestHeader('Content-Type', 'text/plain');
+      xhr.send(JSON.stringify(payload));
     }
   }
   
@@ -65,6 +80,7 @@
   if (document.visibilityState === 'hidden' || document.visibilityState === 'prerender') {
     document.addEventListener('visibilitychange', handleVisibilityChange);
   } else {
+    // Track immediately if page is visible
     track();
   }
   
