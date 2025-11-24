@@ -72,19 +72,34 @@
   
   // Track on page load - try multiple methods to ensure it runs
   function initTracking() {
+    console.log('🚀 Holm Analytics: Initializing tracking, readyState:', document.readyState);
+    
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      setTimeout(track, 100); // Small delay to ensure DOM is ready
+      console.log('📊 Holm Analytics: Document already ready, tracking immediately');
+      setTimeout(function() {
+        console.log('⏰ Holm Analytics: Executing track after delay');
+        track();
+      }, 100);
     } else {
+      console.log('⏳ Holm Analytics: Document not ready, waiting for load event');
       window.addEventListener('load', function() {
-        setTimeout(track, 100);
+        console.log('✅ Holm Analytics: Load event fired, tracking now');
+        setTimeout(function() {
+          track();
+        }, 100);
       });
       // Also try DOMContentLoaded as fallback
       document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(track, 100);
+        console.log('✅ Holm Analytics: DOMContentLoaded fired, tracking now');
+        setTimeout(function() {
+          track();
+        }, 100);
       });
     }
   }
   
+  // Start tracking immediately
+  console.log('🎯 Holm Analytics: Starting initialization');
   initTracking();
   
   // Track on pushState/replaceState (SPA navigation)
