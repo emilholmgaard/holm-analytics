@@ -5,7 +5,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Handle both JSON and text/plain (like Plausible)
+    const contentType = request.headers.get('content-type') || '';
+    let body;
+    
+    if (contentType.includes('application/json')) {
+      body = await request.json();
+    } else {
+      // Handle text/plain (like Plausible sends)
+      const text = await request.text();
+      body = JSON.parse(text);
+    }
     
     // Basic validation
     if (!body.scriptId || !body.url) {

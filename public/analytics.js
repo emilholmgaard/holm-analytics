@@ -5,119 +5,95 @@
   var scriptId = '{{SCRIPT_ID}}';
   var apiEndpoint = '{{API_ENDPOINT}}';
   var domain = '{{DOMAIN}}';
-  
-  // Debug logging
-  console.log('🔍 Holm Analytics: Script loaded', { scriptId: scriptId, apiEndpoint: apiEndpoint, domain: domain });
+  var lastPage = null;
   
   if (!scriptId || scriptId === '{{SCRIPT_ID}}') {
-    console.error('❌ Holm Analytics: Invalid script configuration - scriptId is missing or not replaced');
     return;
   }
   
   if (!apiEndpoint || apiEndpoint === '{{API_ENDPOINT}}') {
-    console.error('❌ Holm Analytics: Invalid script configuration - apiEndpoint is missing or not replaced');
     return;
   }
   
-  // Track pageview
+  // Track pageview (based on Plausible's approach)
   function track() {
-    try {
-      var payload = {
-        scriptId: scriptId,
-        domain: domain,
-        url: window.location.href,
-        referrer: document.referrer || '',
-        screen: {
-          width: window.screen.width || 0,
-          height: window.screen.height || 0
-        },
-        viewport: {
-          width: window.innerWidth || 0,
-          height: window.innerHeight || 0
-        },
-        timestamp: new Date().toISOString()
-      };
-      
-      console.log('📤 Holm Analytics: Sending page view', payload);
-      
-      // Send using fetch with keepalive (works better for JSON)
+    // Prevent duplicate tracking for same page
+    if (lastPage === window.location.pathname) {
+      return;
+    }
+    lastPage = window.location.pathname;
+    
+    var payload = {
+      scriptId: scriptId,
+      domain: domain,
+      url: window.location.href,
+      referrer: document.referrer || null,
+      screen: {
+        width: window.screen.width || 0,
+        height: window.screen.height || 0
+      },
+      viewport: {
+        width: window.innerWidth || 0,
+        height: window.innerHeight || 0
+      },
+      timestamp: new Date().toISOString()
+    };
+    
+    // Send using fetch with keepalive (like Plausible uses text/plain)
+    if (window.fetch) {
       fetch(apiEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain'
         },
-        body: JSON.stringify(payload),
         keepalive: true,
-        mode: 'cors'
-      }).then(function(response) {
-        console.log('📥 Holm Analytics: Response status', response.status);
-        // Log for debugging
-        if (response.status === 204 || response.status === 200) {
-          console.log('✅ Holm Analytics: Page view tracked successfully');
-        } else {
-          console.warn('⚠️ Holm Analytics: Tracking failed with status', response.status);
-          return response.text().then(function(text) {
-            console.warn('Response body:', text);
-          });
-        }
-      }).catch(function(err) {
-        // Log error for debugging
-        console.error('❌ Holm Analytics: Failed to send tracking data', err);
-        console.error('Error details:', err.message, err.stack);
-      });
-    } catch (error) {
-      console.error('❌ Holm Analytics: Error in track function', error);
-    }
-  }
-  
-  // Track on page load - try multiple methods to ensure it runs
-  function initTracking() {
-    console.log('🚀 Holm Analytics: Initializing tracking, readyState:', document.readyState);
-    
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      console.log('📊 Holm Analytics: Document already ready, tracking immediately');
-      setTimeout(function() {
-        console.log('⏰ Holm Analytics: Executing track after delay');
-        track();
-      }, 100);
-    } else {
-      console.log('⏳ Holm Analytics: Document not ready, waiting for load event');
-      window.addEventListener('load', function() {
-        console.log('✅ Holm Analytics: Load event fired, tracking now');
-        setTimeout(function() {
-          track();
-        }, 100);
-      });
-      // Also try DOMContentLoaded as fallback
-      document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ Holm Analytics: DOMContentLoaded fired, tracking now');
-        setTimeout(function() {
-          track();
-        }, 100);
+        body: JSON.stringify(payload)
+      }).catch(function() {
+        // Silently fail
       });
     }
   }
   
-  // Start tracking immediately
-  console.log('🎯 Holm Analytics: Starting initialization');
-  initTracking();
+  // Handle page visibility (like Plausible)
+  function handleVisibilityChange() {
+    if (!lastPage && document.visibilityState === 'visible') {
+      track();
+    }
+  }
+  
+  // Initialize tracking based on visibility state (like Plausible)
+  if (document.visibilityState === 'hidden' || document.visibilityState === 'prerender') {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  } else {
+    track();
+  }
+  
+  // Handle bfcache restore (like Plausible)
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      // Page was restored from bfcache - track a pageview
+      track();
+    }
+  });
   
   // Track on pushState/replaceState (SPA navigation)
   var originalPushState = history.pushState;
   var originalReplaceState = history.replaceState;
   
-  history.pushState = function() {
-    originalPushState.apply(history, arguments);
-    setTimeout(track, 0);
-  };
+  if (history.pushState) {
+    history.pushState = function() {
+      originalPushState.apply(history, arguments);
+      track();
+    };
+    
+    window.addEventListener('popstate', track);
+  }
   
-  history.replaceState = function() {
-    originalReplaceState.apply(history, arguments);
-    setTimeout(track, 0);
-  };
-  
-  window.addEventListener('popstate', function() {
-    setTimeout(track, 0);
-  });
+  if (history.replaceState) {
+    history.replaceState = function() {
+      originalReplaceState.apply(history, arguments);
+      track();
+    };
+  }
 })();
 
